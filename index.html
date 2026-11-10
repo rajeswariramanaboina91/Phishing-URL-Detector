@@ -1,0 +1,546 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing URL Detector</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 240px;
+    background: #0f172a;
+    color: white;
+    padding: 25px 18px;
+}
+
+.sidebar h2 {
+    font-size: 21px;
+    margin-bottom: 35px;
+    color: #60a5fa;
+}
+
+.sidebar a {
+    display: block;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #1e40af;
+    color: white;
+}
+
+.main {
+    flex: 1;
+    padding: 30px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.topbar h1 {
+    font-size: 26px;
+}
+
+.active-status {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 9px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.welcome {
+    background: linear-gradient(120deg, #1e3a8a, #2563eb);
+    color: white;
+    padding: 28px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.welcome h2 {
+    margin-bottom: 10px;
+}
+
+.welcome p {
+    line-height: 1.6;
+    color: #dbeafe;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.stat-card h3 {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.stat-card p {
+    font-size: 21px;
+    font-weight: bold;
+    color: #1d4ed8;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.card-description {
+    color: #64748b;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+input {
+    flex: 1;
+    min-width: 200px;
+    padding: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+input:focus {
+    outline: 2px solid #93c5fd;
+    border-color: #2563eb;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.result-box {
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 18px;
+    overflow-wrap: anywhere;
+}
+
+.result-box h3 {
+    margin-bottom: 15px;
+}
+
+.result-details p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.risk {
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.high {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.low {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 18px;
+}
+
+.check-list {
+    list-style: none;
+    margin-top: 15px;
+}
+
+.check-list li {
+    padding: 13px;
+    border-bottom: 1px solid #e2e8f0;
+    line-height: 1.5;
+}
+
+.passed {
+    color: #15803d;
+    font-weight: bold;
+}
+
+.warning {
+    color: #b45309;
+    font-weight: bold;
+}
+
+.reason-list {
+    padding-left: 22px;
+    line-height: 1.8;
+    margin-top: 10px;
+}
+
+.about-text {
+    color: #64748b;
+    line-height: 1.8;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+@media (max-width: 800px) {
+    .container {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .sidebar a {
+        display: inline-block;
+        padding: 10px;
+    }
+
+    .main {
+        padding: 18px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <h2>🛡️ URL Security</h2>
+
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#analyzer">URL Analyzer</a>
+        <a href="#checks">Security Checks</a>
+        <a href="#history">Scan History</a>
+        <a href="#about">About Project</a>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar" id="dashboard">
+            <h1>Security Dashboard</h1>
+            <span class="active-status">● SYSTEM ACTIVE</span>
+        </header>
+
+        <section class="welcome">
+            <h2>Welcome to Phishing URL Detector</h2>
+            <p>
+                Analyze suspicious URLs and identify possible phishing
+                patterns using Python-based security checks.
+            </p>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <h3>Analysis Engine</h3>
+                <p>Python</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Security Checks</h3>
+                <p>7 Checks</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Risk Detection</h3>
+                <p>0 - 100</p>
+            </div>
+        </section>
+                <section class="stats">
+            <div class="stat-card">
+                <h3>Total Scans</h3>
+                <p>{{ stats['total_scans'] or 0 }}</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Phishing URLs</h3>
+                <p>{{ stats['phishing_count'] or 0 }}</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Suspicious URLs</h3>
+                <p>{{ stats['suspicious_count'] or 0 }}</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Low Risk URLs</h3>
+                <p>{{ stats['low_risk_count'] or 0 }}</p>
+            </div>
+        </section>
+
+        <section class="card" id="analyzer">
+            <h2>🔍 Analyze a URL</h2>
+
+            <p class="card-description">
+                Enter a website URL below to check for suspicious patterns.
+            </p>
+
+            <form method="POST" action="/">
+                <input
+                    type="text"
+                    name="url"
+                    placeholder="Example: https://example.com"
+                    value="{{ request.form.get('url', '') }}"
+                    required
+                >
+
+                <button type="submit">Analyze URL</button>
+            </form>
+
+            {% if result %}
+
+                {% if result.get('error') %}
+
+                    <div class="error">
+                        {{ result.get('error') }}
+                    </div>
+
+                {% else %}
+
+                    <div class="result-box">
+                        <h3>Analysis Result</h3>
+
+                        <div class="result-details">
+                            <p><strong>URL:</strong> {{ result.url }}</p>
+                            <p><strong>Domain:</strong> {{ result.domain }}</p>
+                            <p><strong>Protocol:</strong> {{ result.protocol }}</p>
+                            <p><strong>URL Length:</strong> {{ result.length }}</p>
+                            <p><strong>Risk Score:</strong> {{ result.score }}/100</p>
+
+                            <p>
+                                <strong>Detection:</strong>
+                                {% if result.risk_level == 'High' %}
+                                    <span class="risk high">{{ result.result }}</span>
+                                {% elif result.risk_level == 'Medium' %}
+                                    <span class="risk medium">{{ result.result }}</span>
+                                {% else %}
+                                    <span class="risk low">{{ result.result }}</span>
+                                {% endif %}
+                            </p>
+
+                            <p>
+                                <strong>Risk Level:</strong>
+                                {{ result.risk_level }}
+                            </p>
+                        </div>
+
+                        <h3 style="margin-top:20px;">Reasons</h3>
+
+                        <ul class="reason-list">
+                            {% for reason in result.reasons %}
+                                <li>{{ reason }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="result-box" id="checks">
+                        <h3>Security Checks</h3>
+
+                        <ul class="check-list">
+                            {% for check in result.checks %}
+                                <li>
+                                    <strong>{{ check.name }}</strong>
+                                    -
+                                    {% if check.status == 'Passed' %}
+                                        <span class="passed">{{ check.status }}</span>
+                                    {% else %}
+                                        <span class="warning">{{ check.status }}</span>
+                                    {% endif %}
+                                    <br>
+                                    {{ check.message }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                {% endif %}
+
+            {% endif %}
+        </section>
+                <section class="card" id="history">
+            <h2>📋 Scan History</h2>
+            <a href="/export" download
+   style="display:inline-block; margin:12px 0; padding:10px 18px;
+   background:#2563eb; color:white; text-decoration:none;
+   border-radius:8px;">
+    ⬇ Download CSV
+</a>
+<form action="/clear-history" method="POST">
+    <button type="submit"
+        style="padding:10px 18px; background:#dc2626;
+        color:white; border:none; border-radius:8px; cursor:pointer;">
+        🗑 Clear History
+    </button>
+</form>
+            <p class="card-description">
+                Your 10 most recent URL scans.
+            </p>
+
+            {% if scan_history %}
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; min-width:600px;">
+                        <thead>
+                            <tr style="background:#eff6ff; text-align:left;">
+                                <th style="padding:12px;">URL</th>
+                                <th style="padding:12px;">Risk Score</th>
+                                <th style="padding:12px;">Detection</th>
+                                <th style="padding:12px;">Risk Level</th>
+                                <th style="padding:12px;">Scanned At</th>
+                                <th style="padding:12px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in scan_history %}
+                                <tr>
+                                    <td style="padding:12px; border-bottom:1px solid #e2e8f0; overflow-wrap:anywhere;">{{ item.url }}</td>
+                                    <td style="padding:12px; border-bottom:1px solid #e2e8f0;">{{ item.score }}/100</td>
+                                    <td style="padding:12px; border-bottom:1px solid #e2e8f0;">{{ item.result }}</td>
+                                    <td style="padding:12px; border-bottom:1px solid #e2e8f0;">{{ item.risk_level }}</td>
+                                    <td style="padding:12px; border-bottom:1px solid #e2e8f0;">{{ item.scanned_at }}</td>
+                                    <td style="padding:12px;">
+                                        <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const deleteForms = document.querySelectorAll('form[action^="/delete-scan/"]');
+
+    deleteForms.forEach(function(form) {
+        form.addEventListener("submit", function(event) {
+            const confirmed = confirm("Are you sure you want to delete this scan?");
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        });
+    });
+});
+</script>
+    
+        <form action="/delete-scan/{{ item.id }}" method="POST">
+    <button type="submit"
+        onclick="return confirm('Are you sure you want to delete this scan?');"
+        style="background:#dc2626; color:white; border:none; padding:7px 12px; border-radius:6px; cursor:pointer;">
+        🗑 Delete
+    </button>
+</form>
+</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="about-text">No scans yet. Analyze a URL to see it here.</p>
+            {% endif %}
+        </section>
+
+        <section class="card" id="about">
+            <h2>About This Project</h2>
+
+            <p class="about-text">
+                Phishing URL Detector is a cybersecurity project developed
+                using Python and Flask. It analyzes URLs using rule-based
+                security checks such as HTTPS detection, suspicious keywords,
+                IP address detection, URL length, special characters,
+                domain patterns and embedded credentials.
+            </p>
+
+            <p class="about-text" style="margin-top:12px;">
+                Note: This project uses basic rule-based analysis.
+                A LOW RISK result does not guarantee that a website is safe.
+            </p>
+        </section>
+
+        <footer class="footer">
+            Phishing URL Detector | Cybersecurity Project
+        </footer>
+
+    </main>
+</div>
+
+</body>
+</html>
