@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, send_file, redirect
 from analyzer import analyze_url
 import sqlite3
+import os
 import csv
 import io
 
 app = Flask(__name__)
 
-DATABASE = "scan_history.db"
+DATABASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scan_history.db")
 
 
 def init_db():
