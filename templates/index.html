@@ -463,6 +463,7 @@ th {
 
         <section class="card history" id="history">
             <h3>📋 Recent Scan History</h3>
+            <button onclick="downloadCSV()">Download CSV</button>
 
             <table>
                 <thead>
@@ -538,6 +539,39 @@ function updateStats() {
     document.getElementById("safeCount").textContent = safeCount;
     document.getElementById("detectionRate").textContent =
         (totalScans ? Math.round(phishingCount / totalScans * 100) : 0) + "%";
+}
+    function downloadCSV() {
+    if (scanHistory.length === 0) {
+        alert("No scan history available.");
+        return;
+    }
+
+    const rows = [
+        ["Website URL", "Result", "Risk Score", "Time"],
+        ...scanHistory.map(item => [
+            item.url,
+            item.isPhishing ? "Phishing" : "Low Risk",
+            item.risk,
+            item.date
+        ])
+    ];
+
+    const csv = rows.map(row =>
+        row.map(value =>
+            '"' + String(value).replace(/"/g, '""') + '"'
+        ).join(",")
+    ).join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "scan_history.csv";
+    link.click();
+
+    URL.revokeObjectURL(link.href);
 }
 
 function analyzeURL() {
